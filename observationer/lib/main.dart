@@ -11,7 +11,15 @@ class StartingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        body: StartingPageBody(),
+        body: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("assets/images/Background_observations.jpg"),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: StartingPageBody(),
+        ),
       ),
     );
   }
@@ -94,8 +102,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
             icon: const Icon(Icons.refresh),
             tooltip: 'Refresh page',
             onPressed: () {
-              setState(() {
-              });
+              setState(() {});
             },
           ),
         ],
@@ -112,10 +119,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
                 itemBuilder: (BuildContext context, int index) {
                   return ListTile(
                     title: Text(snapshot.data[index].subject,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold
-                        )
-                    ),
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text('Plats: ' +
                         snapshot.data[index].longitude.toString() +
                         ', ' +
@@ -183,23 +187,26 @@ class CommunicateWithApi {
   final List<Observation> observations = [];
 
   Future<List<Observation>> fetchObservations() async {
-    var data =
-    await http.get('https://saabstudent2020.azurewebsites.net/observation/');
+    var data = await http
+        .get('https://saabstudent2020.azurewebsites.net/observation/');
 
     if (data.statusCode == 200) {
       var jsonData = json.decode(data.body);
 
       //Not sure if this is the best way
       for (var o in jsonData) {
-        Observation obs = Observation(o['id'], o['subject'], o['body'],
-            o['created'], o['position']['longitude'], o['position']['latitude']);
-        if(!observations.contains(obs)){
+        Observation obs = Observation(
+            o['id'],
+            o['subject'],
+            o['body'],
+            o['created'],
+            o['position']['longitude'],
+            o['position']['latitude']);
+        if (!observations.contains(obs)) {
           observations.add(obs);
-
         }
       }
       return observations;
-
     } else {
       throw Exception('Failed to load observations');
     }
@@ -217,5 +224,3 @@ class Observation {
   final double longitude;
   final double latitude;
 }
-
-
