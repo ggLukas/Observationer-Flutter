@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:observationer/map_view.dart';
 
 void main() {
   runApp(StartingPage());
@@ -46,7 +47,10 @@ class StartingPageBody extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
-            onPressed: () => {},
+            onPressed: () => {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => MapView()))
+            },
             splashColor: Colors.indigo,
           ),
           const SizedBox(height: 50),
@@ -141,7 +145,9 @@ class _ObservationsPageState extends State<ObservationsPage> {
             } else if (snapshot.hasError) {
               return Text("${snapshot.error}");
             }
-            return CircularProgressIndicator();
+            return Center(
+              child: CircularProgressIndicator(),
+            );
           },
         ),
       ),
