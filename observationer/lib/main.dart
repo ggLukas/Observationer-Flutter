@@ -114,34 +114,9 @@ class _ObservationsPageState extends State<ObservationsPage> {
       body: Container(
         child: FutureBuilder(
           future: futureObservation = CommunicateWithApi().fetchObservations(),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
+          builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return ListView.separated(
-                //padding: EdgeInsets.all(8.0),
-                separatorBuilder: (context, index) => Divider(),
-                itemCount: snapshot.data.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return ListTile(
-                    title: Text(snapshot.data[index].subject,
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('Plats: ' +
-                        snapshot.data[index].longitude.toString() +
-                        ', ' +
-                        snapshot.data[index].latitude.toString() +
-                        '\n' +
-                        'Anteckningar: ' +
-                        snapshot.data[index].body),
-                    isThreeLine: true, //Gives each item more space
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                            builder: (context) =>
-                                OneObservationPage(snapshot.data[index])),
-                      );
-                    },
-                  );
-                },
-              );
+              return _buildListView(snapshot);
             } else if (snapshot.hasError) {
               return Text("${snapshot.error}");
             }
@@ -153,10 +128,42 @@ class _ObservationsPageState extends State<ObservationsPage> {
       ),
     );
   }
+
+  Widget _buildListView(snapshot) {
+    return ListView.separated(
+      //padding: EdgeInsets.all(8.0),
+      separatorBuilder: (context, index) => Divider(),
+      itemCount: snapshot.data.length,
+      itemBuilder: (BuildContext context, int index) {
+        return _buildRow(snapshot.data[index]);
+      },
+    );
+  }
+
+  Widget _buildRow(Observation obs) {
+    return ListTile(
+      title: Text(obs.subject, style: TextStyle(fontWeight: FontWeight.bold)),
+      subtitle: Text('Plats: ' +
+          obs.longitude.toString() +
+          ', ' +
+          obs.latitude.toString() +
+          '\n' +
+          'Anteckningar: ' +
+          obs.body),
+      isThreeLine: true, //Gives each item more space
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+              builder: (context) => OneObservationPage(obs)),
+        );
+      },
+    );
+  }
 }
 
 class OneObservationPage extends StatefulWidget {
   OneObservationPage(this.obs);
+
   final Observation obs;
 
   @override
@@ -165,6 +172,7 @@ class OneObservationPage extends StatefulWidget {
 
 class _OneObservationPageState extends State<OneObservationPage> {
   _OneObservationPageState(this.obs);
+
   Observation obs;
 
   @override
