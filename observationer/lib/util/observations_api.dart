@@ -2,9 +2,13 @@ import 'dart:convert';
 import '../model/observation.dart';
 import 'package:http/http.dart' as http;
 
+/// This class is responsible for communication with the observations API.
 class ObservationsAPI {
   final List<Observation> observations = [];
 
+  /// Fetches all observations from the database.
+  ///
+  /// Returns a list of Observations sometime in the future.
   Future<List<Observation>> fetchObservations() async {
     var data = await http
         .get('https://saabstudent2020.azurewebsites.net/observation/');

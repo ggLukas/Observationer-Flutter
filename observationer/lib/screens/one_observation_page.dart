@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:observationer/model/observation.dart';
 
+/// The view that displays specific/detailed data for a singular Observation.
 class OneObservationPage extends StatefulWidget {
   OneObservationPage(this.obs);
 

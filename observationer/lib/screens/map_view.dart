@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+/// The map view. Shows current position and allows user to create new observations.
 class MapView extends StatefulWidget {
   @override
   _MapViewState createState() => _MapViewState();
 }
 
 class _MapViewState extends State<MapView> {
+  //TODO: This should be loaded in from current GPS position.
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
     zoom: 14.4746,

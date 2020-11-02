@@ -1,3 +1,6 @@
+/// Simple container class for the data an Observation can hold.
+///
+/// This class is immutable.
 class Observation {
   Observation(this.id, this.subject, this.body, this.created, this.longitude,
       this.latitude);

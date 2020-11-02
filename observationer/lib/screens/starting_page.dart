@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'map_view.dart';
 import 'observations_page.dart';
 
+/// The starting page of the application.
 class StartingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

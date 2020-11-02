@@ -3,6 +3,7 @@ import 'package:observationer/util/observations_api.dart';
 import '../model/observation.dart';
 import 'one_observation_page.dart';
 
+/// Shows list of observations.
 class ObservationsPage extends StatefulWidget {
   @override
   _ObservationsPageState createState() => _ObservationsPageState();
