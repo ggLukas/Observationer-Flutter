@@ -16,7 +16,22 @@ class _MapViewState extends State<MapView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Karta'),
+        title: Row(
+          children: [
+            Hero(
+              tag: 'icon',
+              child: Image(
+                color: Colors.white,
+                image: AssetImage('assets/images/obs_icon.png'),
+                width: 20.0,
+              ),
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            Text('Karta'),
+          ],
+        ),
       ),
       body: Container(
         color: Colors.white,

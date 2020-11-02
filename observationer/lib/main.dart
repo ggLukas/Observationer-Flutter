@@ -34,7 +34,23 @@ class StartingPageBody extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.max,
         children: <Widget>[
-          const SizedBox(height: 330), //This is probably a bad way
+          const SizedBox(height: 150),
+          Hero(
+            tag: 'icon',
+            child: Image(
+              image: AssetImage('assets/images/obs_icon.png'),
+              width: 80.0,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Observationer',
+            style: TextStyle(
+                color: Color(0xFF6ACEF0),
+                fontSize: 26.0,
+                fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 250), //This is probably a bad way
           new MaterialButton(
             height: 50.0,
             minWidth: 180.0,
@@ -100,7 +116,22 @@ class _ObservationsPageState extends State<ObservationsPage> {
     return new Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Observationer'),
+        title: Row(
+          children: [
+            Hero(
+              tag: 'icon',
+              child: Image(
+                color: Colors.white,
+                image: AssetImage('assets/images/obs_icon.png'),
+                width: 20.0,
+              ),
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            Text('Observationer'),
+          ],
+        ),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.refresh),
