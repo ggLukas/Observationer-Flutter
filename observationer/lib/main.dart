@@ -34,45 +34,37 @@ class StartingPageBody extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.max,
         children: <Widget>[
-          const SizedBox(height: 330), //This is probably a bad way
-          new MaterialButton(
-            height: 50.0,
-            minWidth: 180.0,
-            color: Theme.of(context).primaryColor,
-            textColor: Colors.white,
-            child: new Text(
-              "Till kartvyn",
-              style: new TextStyle(
+          const SizedBox(height: 380), //This is probably a bad way
+          new ElevatedButton (
+            style: ElevatedButton.styleFrom(
+              primary: Colors.blue,
+              padding: EdgeInsets.symmetric(horizontal: 55, vertical: 15),
+              textStyle: TextStyle(
                 fontSize: 20.0,
-                color: Colors.white,
               ),
             ),
+            child: new Text('Till kartvyn'),
             onPressed: () => {
               Navigator.push(
                   context, MaterialPageRoute(builder: (context) => MapView()))
             },
-            splashColor: Colors.indigo,
           ),
           const SizedBox(height: 50),
-          new MaterialButton(
-            height: 50.0,
-            minWidth: 140.0,
-            color: Theme.of(context).primaryColor,
-            textColor: Colors.white,
-            child: new Text(
-              "Utforska observationer",
-              style: new TextStyle(
+          new ElevatedButton (
+            style: ElevatedButton.styleFrom(
+              primary: Colors.blue,
+              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 17),
+              textStyle: TextStyle(
                 fontSize: 14.0,
-                color: Colors.white,
               ),
             ),
+            child: new Text('Utforska observationer'),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                     builder: (context) => ObservationsPage()),
               );
             },
-            splashColor: Colors.indigo,
           ),
         ],
       ),
