@@ -34,6 +34,7 @@ class StartingPageBody extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.max,
         children: <Widget>[
+          
           const SizedBox(height: 150),
           Hero(
             tag: 'icon',
@@ -50,45 +51,38 @@ class StartingPageBody extends StatelessWidget {
                 fontSize: 26.0,
                 fontWeight: FontWeight.bold),
           ),
+
           const SizedBox(height: 250), //This is probably a bad way
-          new MaterialButton(
-            height: 50.0,
-            minWidth: 180.0,
-            color: Theme.of(context).primaryColor,
-            textColor: Colors.white,
-            child: new Text(
-              "Till kartvyn",
-              style: new TextStyle(
+          new ElevatedButton (
+            style: ElevatedButton.styleFrom(
+              primary: Colors.blue,
+              padding: EdgeInsets.symmetric(horizontal: 55, vertical: 15),
+              textStyle: TextStyle(
                 fontSize: 20.0,
-                color: Colors.white,
               ),
             ),
+            child: new Text('Till kartvyn'),
             onPressed: () => {
               Navigator.push(
                   context, MaterialPageRoute(builder: (context) => MapView()))
             },
-            splashColor: Colors.indigo,
           ),
           const SizedBox(height: 50),
-          new MaterialButton(
-            height: 50.0,
-            minWidth: 140.0,
-            color: Theme.of(context).primaryColor,
-            textColor: Colors.white,
-            child: new Text(
-              "Utforska observationer",
-              style: new TextStyle(
+          new ElevatedButton (
+            style: ElevatedButton.styleFrom(
+              primary: Colors.blue,
+              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 17),
+              textStyle: TextStyle(
                 fontSize: 14.0,
-                color: Colors.white,
               ),
             ),
+            child: new Text('Utforska observationer'),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                     builder: (context) => ObservationsPage()),
               );
             },
-            splashColor: Colors.indigo,
           ),
         ],
       ),
@@ -145,34 +139,9 @@ class _ObservationsPageState extends State<ObservationsPage> {
       body: Container(
         child: FutureBuilder(
           future: futureObservation = CommunicateWithApi().fetchObservations(),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
+          builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return ListView.separated(
-                //padding: EdgeInsets.all(8.0),
-                separatorBuilder: (context, index) => Divider(),
-                itemCount: snapshot.data.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return ListTile(
-                    title: Text(snapshot.data[index].subject,
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('Plats: ' +
-                        snapshot.data[index].longitude.toString() +
-                        ', ' +
-                        snapshot.data[index].latitude.toString() +
-                        '\n' +
-                        'Anteckningar: ' +
-                        snapshot.data[index].body),
-                    isThreeLine: true, //Gives each item more space
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                            builder: (context) =>
-                                OneObservationPage(snapshot.data[index])),
-                      );
-                    },
-                  );
-                },
-              );
+              return _buildListView(snapshot);
             } else if (snapshot.hasError) {
               return Text("${snapshot.error}");
             }
@@ -184,10 +153,42 @@ class _ObservationsPageState extends State<ObservationsPage> {
       ),
     );
   }
+
+  Widget _buildListView(snapshot) {
+    return ListView.separated(
+      //padding: EdgeInsets.all(8.0),
+      separatorBuilder: (context, index) => Divider(),
+      itemCount: snapshot.data.length,
+      itemBuilder: (BuildContext context, int index) {
+        return _buildRow(snapshot.data[index]);
+      },
+    );
+  }
+
+  Widget _buildRow(Observation obs) {
+    return ListTile(
+      title: Text(obs.subject, style: TextStyle(fontWeight: FontWeight.bold)),
+      subtitle: Text('Plats: ' +
+          obs.longitude.toString() +
+          ', ' +
+          obs.latitude.toString() +
+          '\n' +
+          'Anteckningar: ' +
+          obs.body),
+      isThreeLine: true, //Gives each item more space
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+              builder: (context) => OneObservationPage(obs)),
+        );
+      },
+    );
+  }
 }
 
 class OneObservationPage extends StatefulWidget {
   OneObservationPage(this.obs);
+
   final Observation obs;
 
   @override
@@ -196,6 +197,7 @@ class OneObservationPage extends StatefulWidget {
 
 class _OneObservationPageState extends State<OneObservationPage> {
   _OneObservationPageState(this.obs);
+
   Observation obs;
 
   @override
