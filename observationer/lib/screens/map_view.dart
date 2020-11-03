@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:observationer/screens/android_input_dialog.dart';
 
 /// The map view. Shows current position and allows user to create new observations.
 class MapView extends StatefulWidget {
@@ -13,6 +14,14 @@ class _MapViewState extends State<MapView> {
     target: LatLng(37.42796133580664, -122.085749655962),
     zoom: 14.4746,
   );
+
+  AndroidInputDialog _androidInputDialog;
+
+  @override
+  void initState() {
+    super.initState();
+    _androidInputDialog = AndroidInputDialog();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +85,13 @@ class _MapViewState extends State<MapView> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 8.0, right: 8.0),
         child: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return _androidInputDialog.buildDialog(context);
+                });
+          },
           child: Icon(Icons.add),
         ),
       ),
