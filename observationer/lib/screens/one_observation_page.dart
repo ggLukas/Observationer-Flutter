@@ -19,12 +19,12 @@ class _OneObservationPageState extends State<OneObservationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(obs.subject),
-      ),
-      body: Center(
-          child: Text("Anteckningar: " +
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text(obs.subject),
+        ),
+        body: Column(children: [
+          Text("Anteckningar: " +
               obs.body +
               "\n" +
               "Created: " +
@@ -33,7 +33,24 @@ class _OneObservationPageState extends State<OneObservationPage> {
               "Position: " +
               obs.longitude.toString() +
               ", " +
-              obs.latitude.toString())),
+              obs.latitude.toString()),
+
+          Image.network(
+            //Displays first image
+            obs.imageUrl[0],
+            errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace) {
+              return observationWithoutImage();
+            },
+          ),
+
+        ]));
+  }
+
+  Widget observationWithoutImage(){
+    return Container(
+      child: Image(
+        image: AssetImage('assets/images/Placeholder.png'),
+      ),
     );
   }
 }
