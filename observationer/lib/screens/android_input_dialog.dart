@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:observationer/model/input_dialog.dart';
 
-class AndroidInputDialog {
+/// A material design style dialog for Android.
+class AndroidInputDialog implements InputDialog {
   AndroidInputDialog({this.onPress});
 
   Function onPress;

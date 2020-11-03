@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:observationer/model/input_dialog.dart';
 import 'package:observationer/screens/android_input_dialog.dart';
+import 'package:observationer/screens/ios_input_dialog.dart';
 
 /// The map view. Shows current position and allows user to create new observations.
 class MapView extends StatefulWidget {
@@ -15,12 +19,15 @@ class _MapViewState extends State<MapView> {
     zoom: 14.4746,
   );
 
-  AndroidInputDialog _androidInputDialog;
+  InputDialog _inputDialog;
 
   @override
   void initState() {
     super.initState();
-    _androidInputDialog = AndroidInputDialog();
+
+    Platform.isIOS
+        ? _inputDialog = iOSInputDialog()
+        : _inputDialog = AndroidInputDialog();
   }
 
   @override
@@ -89,7 +96,7 @@ class _MapViewState extends State<MapView> {
             showDialog(
                 context: context,
                 builder: (context) {
-                  return _androidInputDialog.buildDialog(context);
+                  return _inputDialog.buildDialog(context);
                 });
           },
           child: Icon(Icons.add),
