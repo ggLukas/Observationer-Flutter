@@ -3,7 +3,7 @@
 /// This class is immutable.
 class Observation {
   Observation(this.id, this.subject, this.body, this.created, this.longitude,
-      this.latitude);
+      this.latitude, this.imageUrl);
 
   final int id;
   final String subject;
@@ -11,4 +11,5 @@ class Observation {
   final String created;
   final double longitude;
   final double latitude;
+  final List<String> imageUrl;
 }
