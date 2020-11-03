@@ -16,18 +16,15 @@ class ObservationsAPI {
     if (data.statusCode == 200) {
       var jsonData = json.decode(data.body);
 
-      //Not sure if this is the best way
-      for (var o in jsonData) {
+      for(int i = jsonData.length - 1; i >= 0; i--){
         Observation obs = Observation(
-            o['id'],
-            o['subject'],
-            o['body'],
-            o['created'],
-            o['position']['longitude'],
-            o['position']['latitude']);
-        if (!observations.contains(obs)) {
-          observations.add(obs);
-        }
+            jsonData[i]['id'],
+            jsonData[i]['subject'],
+            jsonData[i]['body'],
+            jsonData[i]['created'],
+            jsonData[i]['position']['longitude'],
+            jsonData[i]['position']['latitude']);
+        observations.add(obs);
       }
       return observations;
     } else {

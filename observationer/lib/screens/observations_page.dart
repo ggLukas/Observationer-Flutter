@@ -19,6 +19,11 @@ class _ObservationsPageState extends State<ObservationsPage> {
     futureObservation = fetchObservations();
   }
 */
+  //Refresh when swiping
+  Future<Null> refreshList() async {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -50,19 +55,22 @@ class _ObservationsPageState extends State<ObservationsPage> {
           ),
         ],
       ),
-      body: Container(
-        child: FutureBuilder(
-          future: futureObservation = ObservationsAPI().fetchObservations(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return _buildListView(snapshot);
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
-            }
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          },
+      body: RefreshIndicator(
+        onRefresh: refreshList,
+        child: Container(
+          child: FutureBuilder(
+            future: futureObservation = ObservationsAPI().fetchObservations(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return _buildListView(snapshot);
+              } else if (snapshot.hasError) {
+                return Text("${snapshot.error}");
+              }
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            },
+          ),
         ),
       ),
     );
