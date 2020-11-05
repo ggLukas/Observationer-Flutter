@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:observationer/model/observation.dart';
+import 'package:observationer/util/observations_api.dart';
 
 /// The view that displays specific/detailed data for a singular Observation.
 class OneObservationPage extends StatefulWidget {
   OneObservationPage(this.obs);
-
   final Observation obs;
 
   @override
@@ -13,7 +13,7 @@ class OneObservationPage extends StatefulWidget {
 
 class _OneObservationPageState extends State<OneObservationPage> {
   _OneObservationPageState(this.obs);
-
+  Future<List<String>> futureObservationImages;
   Observation obs;
 
   @override
@@ -23,27 +23,46 @@ class _OneObservationPageState extends State<OneObservationPage> {
           centerTitle: true,
           title: Text(obs.subject),
         ),
-        body: Column(children: [
-          Text("Anteckningar: " +
-              obs.body +
-              "\n" +
-              "Created: " +
-              obs.created +
-              "\n" +
-              "Position: " +
-              obs.longitude.toString() +
-              ", " +
-              obs.latitude.toString()),
+        body: buildInfoAboutObservation(),
+          );
+  }
 
-          Image.network(
-            //Displays first image
-            obs.imageUrl[0],
-            errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace) {
-              return observationWithoutImage();
-            },
-          ),
+  Widget buildInfoAboutObservation(){
+    return FutureBuilder(
+      future: futureObservationImages = ObservationsAPI().fetchObservationImages(obs),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          obs.imageUrl = snapshot.data;
 
-        ]));
+          return Column(children: [
+            Text("Anteckningar: " +
+                obs.body +
+                "\n" +
+                "Created: " +
+                obs.created +
+                "\n" +
+                "Position: " +
+                obs.longitude.toString() +
+                ", " +
+                obs.latitude.toString()),
+
+            Image.network(
+              //Displays first image
+              obs.imageUrl[0],
+              errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace) {
+                return observationWithoutImage();
+              },
+            ),
+
+          ]);
+        } else if (snapshot.hasError) {
+          return Text("${snapshot.error}");
+        }
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
   }
 
   Widget observationWithoutImage(){

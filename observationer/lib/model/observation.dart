@@ -11,5 +11,5 @@ class Observation {
   final String created;
   final double longitude;
   final double latitude;
-  final List<String> imageUrl;
+  List<String> imageUrl;
 }
