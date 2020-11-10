@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -21,6 +22,76 @@ class _MapViewState extends State<MapView> {
   );
 
   InputDialog _inputDialog;
+  Position _position;
+  String _lat = '0.0';
+  String _long = '0.0';
+  GoogleMap _googleMap;
+  Completer<GoogleMapController> _controller = Completer();
+
+  CameraPosition _cameraPosition;
+
+  void getCurrentPosition() async {
+    Geolocator.getPositionStream().listen((Position position) {
+      setState(() {
+        this._position = position;
+        this._lat = position.latitude.toStringAsFixed(2);
+        this._long = position.longitude.toStringAsFixed(2);
+        _cameraPosition = CameraPosition(
+          target: LatLng(position.latitude, position.longitude),
+          zoom: 14.4746,
+        );
+      });
+      print(position.latitude.toString() + " " + position.longitude.toString());
+    });
+  }
+
+  Future<void> goToCurrentLocation() async {
+    final GoogleMapController controller = await _controller.future;
+    print("animating loc");
+    controller.animateCamera(CameraUpdate.newCameraPosition(_cameraPosition));
+  }
+
+  Widget currentLocationView() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        width: 200.0,
+        decoration: BoxDecoration(
+            color: Colors.blueGrey.withOpacity(0.8),
+            borderRadius: BorderRadius.circular(10.0)),
+        padding: EdgeInsets.only(bottom: 8.0, top: 8.0),
+        margin: EdgeInsets.only(bottom: 30.0),
+        child: locationAvailable(),
+      ),
+    );
+  }
+
+  /// If location is not available this func will return appropriate UI for that.
+  Widget locationAvailable() {
+    return _position == null
+        ? Center(
+            child: Text(
+              'Location unavailable',
+              style: TextStyle(fontSize: 16.0, color: Colors.white),
+            ),
+          )
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Lat:$_lat',
+                style: TextStyle(fontSize: 16.0, color: Colors.white),
+              ),
+              SizedBox(
+                width: 16.0,
+              ),
+              Text(
+                'Long:$_long',
+                style: TextStyle(fontSize: 16.0, color: Colors.white),
+              ),
+            ],
+          );
+  }
 
   @override
   void initState() {
@@ -29,6 +100,12 @@ class _MapViewState extends State<MapView> {
     Platform.isIOS
         ? _inputDialog = iOSInputDialog()
         : _inputDialog = AndroidInputDialog();
+    getCurrentPosition();
+    _googleMap = GoogleMap(
+      initialCameraPosition:
+          _cameraPosition == null ? _kGooglePlex : _cameraPosition,
+      zoomControlsEnabled: false,
+    );
   }
 
   @override
@@ -57,36 +134,19 @@ class _MapViewState extends State<MapView> {
         child: Stack(
           children: [
             GoogleMap(
-              initialCameraPosition: _kGooglePlex,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: true,
+              mapType: MapType.hybrid,
+              liteModeEnabled: false,
+              initialCameraPosition:
+                  _cameraPosition == null ? _kGooglePlex : _cameraPosition,
               zoomControlsEnabled: false,
+              onMapCreated: (GoogleMapController controller) {
+                _controller.complete(controller);
+                goToCurrentLocation();
+              },
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                width: 200.0,
-                decoration: BoxDecoration(
-                    color: Colors.blueGrey.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(10.0)),
-                padding: EdgeInsets.only(bottom: 8.0, top: 8.0),
-                margin: EdgeInsets.only(bottom: 30.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Lat:22.32',
-                      style: TextStyle(fontSize: 16.0, color: Colors.white),
-                    ),
-                    SizedBox(
-                      width: 16.0,
-                    ),
-                    Text(
-                      'Long:10.12',
-                      style: TextStyle(fontSize: 16.0, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            currentLocationView(),
           ],
         ),
       ),
