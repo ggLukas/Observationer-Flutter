@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:observationer/model/input_dialog.dart';
 import 'package:observationer/screens/android_input_dialog.dart';
 import 'package:observationer/screens/ios_input_dialog.dart';
+import 'package:geolocator/geolocator.dart';
 
 /// The map view. Shows current position and allows user to create new observations.
 class MapView extends StatefulWidget {
