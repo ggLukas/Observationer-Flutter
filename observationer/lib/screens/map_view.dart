@@ -23,14 +23,21 @@ class _MapViewState extends State<MapView> {
 
   InputDialog _inputDialog;
   Position _position;
+
+  /// If location services become inactive, users last known position will be saved in this var.
+  Position _lastKnownPosition;
+
   String _lat = '0.0';
   String _long = '0.0';
   GoogleMap _googleMap;
   Completer<GoogleMapController> _controller = Completer();
 
-  CameraPosition _cameraPosition;
+  CameraPosition _cameraPosition = _kGooglePlex;
 
-  void getCurrentPosition() async {
+  /// Gets continuous stream of position updates.
+  void getPositionUpdates() async {
+    _position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best);
     Geolocator.getPositionStream().listen((Position position) {
       setState(() {
         this._position = position;
@@ -42,19 +49,60 @@ class _MapViewState extends State<MapView> {
         );
       });
       print(position.latitude.toString() + " " + position.longitude.toString());
+    }).onError((Object error) {
+      if (error is LocationServiceDisabledException) {
+        setState(() {
+          _lastKnownPosition = _position;
+          _position = null;
+        });
+        waitForLocationServices();
+      }
     });
   }
 
-  Future<void> goToCurrentLocation() async {
+  /// Gets the users current location ONCE.
+  Future<void> getCurrentLocation() async {
+    _position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.best)
+        .catchError((error, stackTrace) {
+      if (error is LocationServiceDisabledException) {
+        setState(() {
+          _lastKnownPosition = _position;
+          _position = null;
+        });
+        waitForLocationServices();
+      }
+    });
+    if (_position != null) goToCurrentLocation(_position);
+  }
+
+  /// If location services were disabled then we wait for them to be active once again.
+  Future<void> waitForLocationServices() async {
+    bool isLocationServiceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (isLocationServiceEnabled) {
+      setState(() {
+        getCurrentLocation();
+        getPositionUpdates();
+      });
+    }
+  }
+
+  /// Animates away to the users current location.
+  Future<void> goToCurrentLocation(Position position) async {
     final GoogleMapController controller = await _controller.future;
-    print("animating loc");
+    _cameraPosition = CameraPosition(
+      target: LatLng(position.latitude, position.longitude),
+      zoom: 14.4746,
+    );
     controller.animateCamera(CameraUpdate.newCameraPosition(_cameraPosition));
   }
 
+  /// Displays the GPS-coords in the bottom of the view.
   Widget currentLocationView() {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
+        height: 45.0,
         width: 200.0,
         decoration: BoxDecoration(
             color: Colors.blueGrey.withOpacity(0.8),
@@ -100,11 +148,20 @@ class _MapViewState extends State<MapView> {
     Platform.isIOS
         ? _inputDialog = iOSInputDialog()
         : _inputDialog = AndroidInputDialog();
-    getCurrentPosition();
+
+    getPositionUpdates();
+
     _googleMap = GoogleMap(
-      initialCameraPosition:
-          _cameraPosition == null ? _kGooglePlex : _cameraPosition,
+      myLocationEnabled: true,
+      myLocationButtonEnabled: true,
+      mapType: MapType.hybrid,
+      liteModeEnabled: false,
+      initialCameraPosition: _kGooglePlex,
       zoomControlsEnabled: false,
+      onMapCreated: (GoogleMapController controller) {
+        _controller.complete(controller);
+        getCurrentLocation();
+      },
     );
   }
 
@@ -133,19 +190,7 @@ class _MapViewState extends State<MapView> {
         color: Colors.white,
         child: Stack(
           children: [
-            GoogleMap(
-              myLocationEnabled: true,
-              myLocationButtonEnabled: true,
-              mapType: MapType.hybrid,
-              liteModeEnabled: false,
-              initialCameraPosition:
-                  _cameraPosition == null ? _kGooglePlex : _cameraPosition,
-              zoomControlsEnabled: false,
-              onMapCreated: (GoogleMapController controller) {
-                _controller.complete(controller);
-                goToCurrentLocation();
-              },
-            ),
+            _googleMap,
             currentLocationView(),
           ],
         ),
