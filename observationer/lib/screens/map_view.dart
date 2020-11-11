@@ -7,6 +7,7 @@ import 'package:observationer/model/input_dialog.dart';
 import 'package:observationer/screens/android_input_dialog.dart';
 import 'package:observationer/screens/ios_input_dialog.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:observationer/util/location_manager.dart';
 
 /// The map view. Shows current position and allows user to create new observations.
 class MapView extends StatefulWidget {
@@ -22,70 +23,13 @@ class _MapViewState extends State<MapView> {
   );
 
   InputDialog _inputDialog;
-  Position _position;
 
-  /// If location services become inactive, users last known position will be saved in this var.
-  Position _lastKnownPosition;
+  LocationManager _locationManager;
 
-  String _lat = '0.0';
-  String _long = '0.0';
   GoogleMap _googleMap;
   Completer<GoogleMapController> _controller = Completer();
 
   CameraPosition _cameraPosition = _kGooglePlex;
-
-  /// Gets continuous stream of position updates.
-  void getPositionUpdates() async {
-    _position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.best);
-    Geolocator.getPositionStream().listen((Position position) {
-      setState(() {
-        this._position = position;
-        this._lat = position.latitude.toStringAsFixed(2);
-        this._long = position.longitude.toStringAsFixed(2);
-        _cameraPosition = CameraPosition(
-          target: LatLng(position.latitude, position.longitude),
-          zoom: 14.4746,
-        );
-      });
-      print(position.latitude.toString() + " " + position.longitude.toString());
-    }).onError((Object error) {
-      if (error is LocationServiceDisabledException) {
-        setState(() {
-          _lastKnownPosition = _position;
-          _position = null;
-        });
-        waitForLocationServices();
-      }
-    });
-  }
-
-  /// Gets the users current location ONCE.
-  Future<void> getCurrentLocation() async {
-    _position = await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.best)
-        .catchError((error, stackTrace) {
-      if (error is LocationServiceDisabledException) {
-        setState(() {
-          _lastKnownPosition = _position;
-          _position = null;
-        });
-        waitForLocationServices();
-      }
-    });
-    if (_position != null) goToCurrentLocation(_position);
-  }
-
-  /// If location services were disabled then we wait for them to be active once again.
-  Future<void> waitForLocationServices() async {
-    bool isLocationServiceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (isLocationServiceEnabled) {
-      setState(() {
-        getCurrentLocation();
-        getPositionUpdates();
-      });
-    }
-  }
 
   /// Animates away to the users current location.
   Future<void> goToCurrentLocation(Position position) async {
@@ -116,7 +60,7 @@ class _MapViewState extends State<MapView> {
 
   /// If location is not available this func will return appropriate UI for that.
   Widget locationAvailable() {
-    return _position == null
+    return _locationManager.getPosition() == null
         ? Center(
             child: Text(
               'Location unavailable',
@@ -127,14 +71,14 @@ class _MapViewState extends State<MapView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Lat:$_lat',
+                'Lat:${_locationManager.getPosition().latitude.toStringAsFixed(2)}',
                 style: TextStyle(fontSize: 16.0, color: Colors.white),
               ),
               SizedBox(
                 width: 16.0,
               ),
               Text(
-                'Long:$_long',
+                'Long:${_locationManager.getPosition().longitude.toStringAsFixed(2)}',
                 style: TextStyle(fontSize: 16.0, color: Colors.white),
               ),
             ],
@@ -149,7 +93,24 @@ class _MapViewState extends State<MapView> {
         ? _inputDialog = iOSInputDialog()
         : _inputDialog = AndroidInputDialog();
 
-    getPositionUpdates();
+    _locationManager = LocationManager();
+
+    _locationManager.onLocationServicesDisabled(() {
+      setState(() {}); // redraw
+    });
+
+    _locationManager.onLocationServicesEnabled(() {
+      setState(() {}); // redraw
+    });
+
+    _locationManager.getPositionUpdates((lat, long) {
+      setState(() {
+        _cameraPosition = CameraPosition(
+          target: LatLng(lat, long),
+          zoom: 14.4746,
+        );
+      });
+    });
 
     _googleMap = GoogleMap(
       myLocationEnabled: true,
@@ -160,7 +121,9 @@ class _MapViewState extends State<MapView> {
       zoomControlsEnabled: false,
       onMapCreated: (GoogleMapController controller) {
         _controller.complete(controller);
-        getCurrentLocation();
+        _locationManager
+            .getCurrentLocation()
+            .then((p) => goToCurrentLocation(p));
       },
     );
   }
