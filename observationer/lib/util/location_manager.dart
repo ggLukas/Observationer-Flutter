@@ -15,7 +15,7 @@ class LocationManager {
   Function _onLocationServicesEnabled;
 
   /// Gets continuous stream of position updates.
-  void getPositionUpdates(
+  Future<void> getPositionUpdates(
       void onPositionUpdateReceived(double lat, double long)) async {
     this._onPositionUpdateReceived = onPositionUpdateReceived;
 
@@ -52,6 +52,18 @@ class LocationManager {
       }
     });
     return _position;
+  }
+
+  Future<bool> checkPermission() async {
+    LocationPermission p = await Geolocator.checkPermission();
+    return (p == LocationPermission.always ||
+        p == LocationPermission.whileInUse);
+  }
+
+  Future<bool> requestPermission() async {
+    LocationPermission p = await Geolocator.requestPermission();
+    return (p == LocationPermission.always ||
+        p == LocationPermission.whileInUse);
   }
 
   /// Code to be executed when the location services has been disabled.

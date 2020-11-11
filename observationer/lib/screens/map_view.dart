@@ -31,6 +31,8 @@ class _MapViewState extends State<MapView> {
 
   CameraPosition _cameraPosition = _kGooglePlex;
 
+  bool _permission = false;
+
   /// Animates away to the users current location.
   Future<void> goToCurrentLocation(Position position) async {
     final GoogleMapController controller = await _controller.future;
@@ -47,7 +49,7 @@ class _MapViewState extends State<MapView> {
       alignment: Alignment.bottomCenter,
       child: Container(
         height: 45.0,
-        width: 200.0,
+        width: 300.0,
         decoration: BoxDecoration(
             color: Colors.blueGrey.withOpacity(0.8),
             borderRadius: BorderRadius.circular(10.0)),
@@ -71,15 +73,15 @@ class _MapViewState extends State<MapView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Lat:${_locationManager.getPosition().latitude.toStringAsFixed(2)}',
-                style: TextStyle(fontSize: 16.0, color: Colors.white),
+                'Lat:${_locationManager.getPosition().latitude.toString()}',
+                style: TextStyle(fontSize: 12.0, color: Colors.white),
               ),
               SizedBox(
                 width: 16.0,
               ),
               Text(
-                'Long:${_locationManager.getPosition().longitude.toStringAsFixed(2)}',
-                style: TextStyle(fontSize: 16.0, color: Colors.white),
+                'Long:${_locationManager.getPosition().longitude.toString()}',
+                style: TextStyle(fontSize: 12.0, color: Colors.white),
               ),
             ],
           );
@@ -92,26 +94,26 @@ class _MapViewState extends State<MapView> {
     Platform.isIOS
         ? _inputDialog = iOSInputDialog()
         : _inputDialog = AndroidInputDialog();
+  }
 
+  Future<void> initView() async {
     _locationManager = LocationManager();
 
-    _locationManager.onLocationServicesDisabled(() {
-      setState(() {}); // redraw
-    });
+    _permission = await _locationManager.checkPermission();
 
-    _locationManager.onLocationServicesEnabled(() {
-      setState(() {}); // redraw
-    });
+    if (_permission) {
+      _initMapAndLocationRequests();
+    } else {
+      bool request = await _locationManager.requestPermission();
+      if (request) {
+        _initMapAndLocationRequests();
+      } else {
+        _permission = false;
+      }
+    }
+  }
 
-    _locationManager.getPositionUpdates((lat, long) {
-      setState(() {
-        _cameraPosition = CameraPosition(
-          target: LatLng(lat, long),
-          zoom: 14.4746,
-        );
-      });
-    });
-
+  Future<void> _initMapAndLocationRequests() async {
     _googleMap = GoogleMap(
       myLocationEnabled: true,
       myLocationButtonEnabled: true,
@@ -121,15 +123,47 @@ class _MapViewState extends State<MapView> {
       zoomControlsEnabled: false,
       onMapCreated: (GoogleMapController controller) {
         _controller.complete(controller);
-        _locationManager
-            .getCurrentLocation()
-            .then((p) => goToCurrentLocation(p));
       },
+    );
+
+    _locationManager.onLocationServicesDisabled(() {
+      setState(() {}); // redraw
+    });
+
+    _locationManager.onLocationServicesEnabled(() {
+      setState(() {}); // redraw
+    });
+
+    Position p = await _locationManager.getCurrentLocation();
+
+    goToCurrentLocation(p);
+    setState(() {});
+
+    _locationManager.getPositionUpdates((lat, long) {
+      setState(() {
+        _cameraPosition = CameraPosition(
+          target: LatLng(lat, long),
+          zoom: 14.4746,
+        );
+      });
+    });
+  }
+
+  Widget locationNotAllowedView() {
+    return Container(
+      child: Center(
+        child: Text(
+          'If you have not, please allow access to your location to use this view.',
+          style: TextStyle(fontSize: 22.0),
+          textAlign: TextAlign.center,
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_permission) initView();
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -153,7 +187,7 @@ class _MapViewState extends State<MapView> {
         color: Colors.white,
         child: Stack(
           children: [
-            _googleMap,
+            _googleMap == null ? locationNotAllowedView() : _googleMap,
             currentLocationView(),
           ],
         ),
