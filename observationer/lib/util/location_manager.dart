@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -14,6 +16,8 @@ class LocationManager {
   Function _onLocationServicesDisabled;
   Function _onLocationServicesEnabled;
 
+  StreamSubscription<Position> _streamSubscription;
+
   /// Gets continuous stream of position updates.
   Future<void> getPositionUpdates(
       void onPositionUpdateReceived(double lat, double long)) async {
@@ -21,7 +25,8 @@ class LocationManager {
 
     _position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.best);
-    Geolocator.getPositionStream().listen((Position position) {
+    _streamSubscription =
+        Geolocator.getPositionStream().listen((Position position) {
       this._position = position;
       this._lat = position.latitude;
       this._long = position.longitude;
@@ -29,7 +34,8 @@ class LocationManager {
       _onPositionUpdateReceived(_lat, _long);
 
       print(position.latitude.toString() + " " + position.longitude.toString());
-    }).onError((Object error) {
+    });
+    _streamSubscription.onError((Object error) {
       if (error is LocationServiceDisabledException) {
         _lastKnownPosition = _position;
         _position = null;
@@ -37,6 +43,10 @@ class LocationManager {
         _waitForLocationServices();
       }
     });
+  }
+
+  void stopPositionUpdates() {
+    _streamSubscription.cancel();
   }
 
   /// Gets the users current location ONCE.

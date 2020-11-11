@@ -88,6 +88,12 @@ class _MapViewState extends State<MapView> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _locationManager.stopPositionUpdates();
+  }
+
+  @override
   void initState() {
     super.initState();
 
