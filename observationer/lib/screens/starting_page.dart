@@ -10,6 +10,7 @@ class StartingPage extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         body: Container(
+          alignment: Alignment.center,
           decoration: BoxDecoration(
             image: DecorationImage(
               image: AssetImage("assets/images/Background_observations.jpg"),
@@ -26,62 +27,75 @@ class StartingPage extends StatelessWidget {
 class StartingPageBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          const SizedBox(height: 150),
-          Hero(
-            tag: 'icon',
-            child: Image(
-              image: AssetImage('assets/images/obs_icon.png'),
-              width: 80.0,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Observationer',
-            style: TextStyle(
-                color: Color(0xFF6ACEF0),
-                fontSize: 26.0,
-                fontWeight: FontWeight.bold),
-          ),
+    return Column(
+      children: <Widget>[
 
-          const SizedBox(height: 250), //This is probably a bad way
-          new ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              primary: Colors.blue,
-              padding: EdgeInsets.symmetric(horizontal: 55, vertical: 15),
-              textStyle: TextStyle(
-                fontSize: 20.0,
-              ),
-            ),
-            child: new Text('Till kartvyn'),
-            onPressed: () => {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => MapView()))
-            },
+        Spacer(),//widget som fyller upp eventuell plats som är kvar på skärmen
+
+        const SizedBox(height:150, width: 150,
+          child: Image(image: AssetImage("assets/images/obs_icon.png")),
+        ),
+
+        Text('Observationer',
+          style: TextStyle(
+            color: Color(0xFF6ACEF0),
+            fontSize: 36.0,
+            fontWeight: FontWeight.bold
           ),
-          const SizedBox(height: 50),
-          new ElevatedButton(
+        ),
+
+        Spacer(),
+
+        Padding(padding: EdgeInsets.symmetric(vertical: 15),
+          child: Text('Välkommen till Observationer',
+            style: TextStyle(
+              color: Colors.white60,
+              fontSize: 16,
+              fontWeight: FontWeight.bold
+            )
+          ),
+        ),
+
+        new ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                primary: Colors.blue,
+                padding: EdgeInsets.symmetric(horizontal: 63, vertical: 15),
+                textStyle: TextStyle(fontSize: 20.0),
+            ),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => MapView()));
+            },
+            child: new Text('Till kartvyn'),
+        ),
+
+        Padding(padding: EdgeInsets.symmetric(vertical: 15),
+          child: Text('Eller',
+            style: TextStyle(
+              color: Colors.white60,
+              fontSize: 12,
+              fontWeight: FontWeight.bold
+            )
+          ),
+        ),
+
+        new ElevatedButton(
             style: ElevatedButton.styleFrom(
               primary: Colors.blue,
-              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 17),
-              textStyle: TextStyle(
-                fontSize: 14.0,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+              textStyle: TextStyle(fontSize: 20.0),
             ),
-            child: new Text('Utforska observationer'),
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                    builder: (context) => ObservationsPage()),
-              );
+              MaterialPageRoute<void>(
+                  builder: (context) => ObservationsPage()));
             },
-          ),
-        ],
-      ),
+            child: new Text('Utforska observationer'),
+              ),
+
+        Spacer(),
+
+      ]
     );
   }
 }
