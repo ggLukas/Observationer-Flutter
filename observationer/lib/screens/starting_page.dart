@@ -22,7 +22,7 @@ class StartingPage extends StatelessWidget {
     );
   }
 }
-
+ 
 class StartingPageBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
