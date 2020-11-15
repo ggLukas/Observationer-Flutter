@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:observationer/util/observations_api.dart';
 import '../model/observation.dart';
 import 'one_observation_page.dart';
+import 'bottom_nav_bar.dart';
 
 /// Shows list of observations.
 class ObservationsPage extends StatefulWidget {
@@ -73,7 +74,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
           ),
         ),
       ),
-    );
+    bottomNavigationBar: navbar(1));
   }
 
   Widget _buildListView(snapshot) {
