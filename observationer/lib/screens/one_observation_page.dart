@@ -17,21 +17,42 @@ class OneObservationPage extends StatefulWidget {
 class _OneObservationPageState extends State<OneObservationPage> {
   _OneObservationPageState(this.obs);
 
-  Future<List<String>> futureObservationImages;
   Observation obs;
+  String initialTextTitle, initialTextBody;
+  Future<List<String>> futureObservationImages;
+  bool _isEditingText = false;
+  bool _editBodySwitch = false;
+  TextEditingController _editingControllerTitle;
+  TextEditingController _editingControllerBody;
+
+  @override
+  void initState() {
+    super.initState();
+    initialTextTitle = obs.subject;
+    initialTextBody = obs.body;
+    _editingControllerTitle = TextEditingController(text: initialTextTitle);
+    _editingControllerBody = TextEditingController(text: initialTextBody);
+  }
+
+  @override
+  void dispose() {
+    _editingControllerTitle.dispose();
+    _editingControllerBody.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: buildInfoAboutObservation(),
-      bottomNavigationBar: navbar(1)
-    );
+        appBar: AppBar(),
+        body: buildInfoAboutObservation(),
+        bottomNavigationBar: navbar(1));
   }
 
   Widget buildInfoAboutObservation() {
     return FutureBuilder(
-      future: futureObservationImages = ObservationsAPI().fetchObservationImages(obs),
+      future: futureObservationImages =
+          ObservationsAPI().fetchObservationImages(obs),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           obs.imageUrl = snapshot.data;
@@ -42,19 +63,26 @@ class _OneObservationPageState extends State<OneObservationPage> {
                   child: Column(children: [
                     headers(),
                     Container(
-                      width: MediaQuery.of(context).size.width,
-                      margin: const EdgeInsets.only(top: 30.0),
-                      child: Text(
-                        "Anteckningar",
-                        textAlign: TextAlign.left,
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-                      ),
-                    ),
+                        width: MediaQuery.of(context).size.width,
+                        margin: const EdgeInsets.only(top: 30.0),
+                        child: Row(children: [
+                          Text(
+                            "Anteckningar",
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 17),
+                          ),
+                          IconButton(
+                              icon: Icon(Icons.edit, color: Colors.grey[600]),
+                              onPressed: () {
+                                setState(() {
+                                  _editBodySwitch = !_editBodySwitch;
+                                });
+                              })
+                        ])),
                     Container(
-                      width: MediaQuery.of(context).size.width,
-                      margin: const EdgeInsets.only(top: 10.0),
-                      child: Text(obs.body, textAlign: TextAlign.left, style: TextStyle(fontSize: 17)),
-                    ),
+                        width: MediaQuery.of(context).size.width,
+                        child: _editBody()),
                     Container(
                         width: MediaQuery.of(context).size.width,
                         margin: const EdgeInsets.only(top: 30.0),
@@ -84,11 +112,8 @@ class _OneObservationPageState extends State<OneObservationPage> {
             Container(
                 height: 100.0,
                 child: Center(
-                    child: Text(
-                  obs.subject,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                ))),
+                  child: Expanded(child: _editTitleTextField()),
+                )),
             Container(
                 height: 30.0,
                 child: Center(
@@ -105,17 +130,29 @@ class _OneObservationPageState extends State<OneObservationPage> {
   }
 
   Widget observationWithImage() {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.3,
-      height: MediaQuery.of(context).size.height * 0.25,
-      margin: const EdgeInsets.only(right: 20.0),
-      child: Image.network(
-        //Displays first image
-        obs.imageUrl[0],
-        errorBuilder:
-            (BuildContext context, Object exception, StackTrace stackTrace) {
-          return observationWithoutImage();
-        },
+    return InkWell(
+      //TODO: funktion för att byta ut bild.
+      onTap: () {},
+      child: Stack(
+        children: <Widget>[
+          Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height * 0.25,
+            margin: const EdgeInsets.only(right: 20.0),
+            child: Image.network(
+              //Displays first image
+              obs.imageUrl[0],
+              errorBuilder: (BuildContext context, Object exception,
+                  StackTrace stackTrace) {
+                return observationWithoutImage();
+              },
+            ),
+          ),
+          Align(
+            alignment: Alignment(-0.9,-0.9),
+            child: Icon(Icons.edit, color: Colors.grey[600]),
+          )
+        ],
       ),
     );
   }
@@ -210,7 +247,7 @@ class _OneObservationPageState extends State<OneObservationPage> {
             style: TextStyle(color: Colors.black),
             children: <TextSpan>[
               TextSpan(
-                  text: "Platsnamn" + "\n",
+                  text: "Koordinater" + "\n",
                   style: TextStyle(fontWeight: FontWeight.bold)),
               TextSpan(
                   text: obs.latitude.toString() +
@@ -253,11 +290,68 @@ class _OneObservationPageState extends State<OneObservationPage> {
     );
   }
 
+  Widget _editBody() {
+    if (_editBodySwitch)
+      return TextField(
+        onSubmitted: (newValue) {
+          setState(() {
+            initialTextBody = newValue;
+            _editBodySwitch = false;
+          });
+        },
+        autofocus: true,
+        controller: _editingControllerBody,
+      );
+    return Text(
+      initialTextBody,
+      style: TextStyle(
+        color: Colors.black,
+        fontSize: 15.0,
+      ),
+    );
+  }
+
+  Widget _editTitleTextField() {
+    if (_isEditingText)
+      return Center(
+        child: TextField(
+          onSubmitted: (newValue) {
+            setState(() {
+              initialTextTitle = newValue;
+              _isEditingText = false;
+            });
+          },
+          autofocus: true,
+          controller: _editingControllerTitle,
+        ),
+      );
+    return InkWell(
+        onTap: () {
+          setState(() {
+            _isEditingText = true;
+          });
+        },
+        child: Center(
+            child: RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(children: [
+                  TextSpan(
+                    text: initialTextTitle,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18.0,
+                    ),
+                  ),
+                  WidgetSpan(
+                    child: Icon(Icons.edit, size: 20, color: Colors.grey[600]),
+                  ),
+                ]))));
+  }
+
   String formatDate() {
     String string = obs.created;
     String date = string.substring(0, 10);
     String time = string.substring(11, 19);
     return date.replaceAll("-", "/") + " - " + time;
   }
-
 }
