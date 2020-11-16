@@ -1,4 +1,7 @@
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
+
 import '../model/observation.dart';
 import 'package:http/http.dart' as http;
 
@@ -21,13 +24,13 @@ class ObservationsAPI {
       for (int i = jsonData.length - 1; i >= 0; i--) {
         //If the observation has image(s)
         Observation obs = Observation(
-            jsonData[i]['id'],
-            jsonData[i]['subject'],
-            jsonData[i]['body'],
-            jsonData[i]['created'],
-            jsonData[i]['position']['longitude'],
-            jsonData[i]['position']['latitude'],
-            ['']);
+            id: jsonData[i]['id'],
+            subject: jsonData[i]['subject'],
+            body: jsonData[i]['body'],
+            created: jsonData[i]['created'],
+            longitude: jsonData[i]['position']['longitude'],
+            latitude: jsonData[i]['position']['latitude'],
+            imageUrl: ['']);
 
         observations.add(obs);
       }
@@ -65,5 +68,34 @@ class ObservationsAPI {
     }
 
     return imageUrl;
+  }
+
+  /// Given the required parameter [title] and [position], uploads the given observation
+  /// to the database.
+  ///
+  /// This function will return the status code for the resulting HTTP request.
+  static Future<int> uploadObservation(
+      {@required String title,
+      @required double latitude,
+      @required double longitude,
+      String description,
+      String image}) async {
+    var payload = json.encode({
+      'subject': title,
+      'body': description,
+      'position': {'longitude': longitude, 'latitude': latitude}
+    });
+
+    Map<String, String> headers = {
+      'Content-type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    var response = await http.post(
+        'https://saabstudent2020.azurewebsites.net/observation/',
+        headers: headers,
+        body: payload);
+
+    return response.statusCode;
   }
 }
