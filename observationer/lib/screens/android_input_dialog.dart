@@ -1,11 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:observationer/model/input_dialog.dart';
+import 'package:observationer/model/observation.dart';
 
 /// A material design style dialog for Android.
 class AndroidInputDialog implements InputDialog {
-  AndroidInputDialog({this.onPress});
+  AndroidInputDialog(
+      {@required this.onPressPositive(Observation ob),
+      @required this.onPressNegative,
+      @required this.pos});
 
-  Function onPress;
+  @override
+  Function onPressPositive;
+
+  @override
+  Function onPressNegative;
+
+  String title;
+  String desc;
+  Position pos;
 
   Widget buildDialog(BuildContext context) {
     return AlertDialog(
@@ -36,6 +49,9 @@ class AndroidInputDialog implements InputDialog {
           ),
           TextField(
             decoration: InputDecoration(labelText: 'Titel...'),
+            onChanged: (val) {
+              title = val;
+            },
           ),
           SizedBox(
             height: 8.0,
@@ -45,6 +61,9 @@ class AndroidInputDialog implements InputDialog {
             maxLines: 3,
             maxLength: 250,
             decoration: InputDecoration(labelText: 'Anteckningar...'),
+            onChanged: (val) {
+              desc = val;
+            },
           ),
           Center(
             child: SizedBox(
@@ -65,6 +84,7 @@ class AndroidInputDialog implements InputDialog {
                 ),
                 child: new Text('Avbryt'),
                 onPressed: () {
+                  onPressNegative();
                   Navigator.of(context).pop();
                 },
               ),
@@ -80,7 +100,13 @@ class AndroidInputDialog implements InputDialog {
                   ),
                 ),
                 child: new Text('Lägg till'),
-                onPressed: () {},
+                onPressed: () {
+                  onPressPositive(Observation(
+                      subject: title,
+                      body: desc,
+                      latitude: pos.latitude,
+                      longitude: pos.longitude));
+                },
               ),
             ],
           )

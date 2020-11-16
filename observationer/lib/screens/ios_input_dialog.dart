@@ -1,8 +1,25 @@
 import 'package:flutter/cupertino.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:observationer/model/input_dialog.dart';
+import 'package:observationer/model/observation.dart';
 
 /// A Cupertino style dialog for iOS.
 class iOSInputDialog implements InputDialog {
+  iOSInputDialog(
+      {@required this.onPressPositive(Observation ob),
+      @required this.onPressNegative,
+      @required this.pos});
+
+  @override
+  Function onPressPositive;
+
+  @override
+  Function onPressNegative;
+
+  String title;
+  String desc;
+  Position pos;
+
   Widget buildDialog(BuildContext context) {
     return CupertinoAlertDialog(
       title: Text('Lägg till ny observation'),
@@ -47,9 +64,18 @@ class iOSInputDialog implements InputDialog {
                     style: TextStyle(color: CupertinoColors.destructiveRed),
                   ),
                   onPressed: () {
+                    onPressNegative();
                     Navigator.of(context).pop();
                   }),
-              CupertinoButton(child: Text('Lägg till'), onPressed: () {})
+              CupertinoButton(
+                  child: Text('Lägg till'),
+                  onPressed: () {
+                    onPressPositive(Observation(
+                        subject: title,
+                        body: desc,
+                        latitude: pos.latitude,
+                        longitude: pos.longitude));
+                  })
             ],
           )
         ],

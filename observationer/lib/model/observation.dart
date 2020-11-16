@@ -2,8 +2,14 @@
 ///
 /// This class is immutable.
 class Observation {
-  Observation(this.id, this.subject, this.body, this.created, this.longitude,
-      this.latitude, this.imageUrl);
+  Observation(
+      {this.id,
+      this.subject,
+      this.body,
+      this.created,
+      this.longitude,
+      this.latitude,
+      this.imageUrl});
 
   final int id;
   final String subject;

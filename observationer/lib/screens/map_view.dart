@@ -4,10 +4,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:observationer/model/input_dialog.dart';
+import 'package:observationer/model/observation.dart';
 import 'package:observationer/screens/android_input_dialog.dart';
 import 'package:observationer/screens/ios_input_dialog.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:observationer/util/location_manager.dart';
+import 'package:observationer/util/observations_api.dart';
 import 'bottom_nav_bar.dart';
 
 /// The map view. Shows current position and allows user to create new observations.
@@ -97,10 +99,31 @@ class _MapViewState extends State<MapView> {
   @override
   void initState() {
     super.initState();
+  }
 
+  void supplyDialog() {
     Platform.isIOS
-        ? _inputDialog = iOSInputDialog()
-        : _inputDialog = AndroidInputDialog();
+        ? _inputDialog = iOSInputDialog(
+            onPressPositive: uploadObservation,
+            onPressNegative: () {},
+            pos: _locationManager.getPosition())
+        : _inputDialog = AndroidInputDialog(
+            onPressPositive: uploadObservation,
+            onPressNegative: () {},
+            pos: _locationManager.getPosition());
+  }
+
+  void uploadObservation(Observation observation) {
+    if (observation.subject == null ||
+        observation.latitude == null ||
+        observation.longitude == null)
+      return; // TODO: Probably present an error message or something.
+
+    ObservationsAPI.uploadObservation(
+        title: observation.subject,
+        description: observation.body,
+        latitude: observation.latitude,
+        longitude: observation.longitude);
   }
 
   Future<void> initView() async {
@@ -206,6 +229,7 @@ class _MapViewState extends State<MapView> {
             showDialog(
                 context: context,
                 builder: (context) {
+                  supplyDialog();
                   return _inputDialog.buildDialog(context);
                 });
           },
